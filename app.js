@@ -36,6 +36,38 @@ let fuel_disp = new PIXI.Text('Fuel left',{fontFamily : 'Arial', fontSize: 24, f
 fuel_disp.anchor.set(1, 0);
 fuel_disp.position.set(WIDTH - 10, 10);
 
+let gameover_disp = new PIXI.Text('See you Space Cowboy', {fontFamily : 'Arial', fontSize: 40, fill: 0xFFFFFF, align: "center", fontWeight: "bold", fontStyle: "italic"});
+gameover_disp.anchor.set(0.5, 0.5);
+gameover_disp.position.set(WIDTH / 2, HEIGHT / 2);
+
+let gameover_background = new PIXI.Graphics();
+gameover_background.beginFill(0);
+gameover_background.drawRect(0, 0, WIDTH, HEIGHT);
+gameover_background.endFill();
+gameover_background.pivot.set(0, 0);
+gameover_background.position.set(0, 0);
+gameover_background.alpha = 0.7;
+
+let try_again_btn_bg = new PIXI.Graphics();
+try_again_btn_bg.beginFill(0x0000FF);
+try_again_btn_bg.drawRoundedRect(-100, -30, 200, 60, 15);
+try_again_btn_bg.endFill();
+try_again_btn_bg.pivot.set(0.5, 0.5);
+
+let try_again_btn_text = new PIXI.Text('Try again', {fontFamily : 'Arial', fontSize: 30, fill: 0xFFFFFF, align: "center"});
+try_again_btn_text.anchor.set(0.5, 0.5);
+//try_again_btn_text.position.set( / 2, HEIGHT / 2);
+
+let try_again_btn = new PIXI.Container();
+try_again_btn.addChild(try_again_btn_bg, try_again_btn_text);
+try_again_btn.position.set(WIDTH / 2, HEIGHT / 2 + 100);
+
+let gameover_screen = new PIXI.Container();
+gameover_screen.addChild(gameover_background);
+gameover_screen.addChild(gameover_disp);
+gameover_screen.addChild(try_again_btn);
+
+
 app.loader.baseUrl = "./assets";
 app.loader.add("bg_back", "background/back.png");
 app.loader.add("bg_mid", "background/middle.png");
@@ -54,9 +86,12 @@ function creatTiling (texture) {
     return tiling;
 }
 
+const hp_max = 3;
+
 function initLevel () {
 
     let accel = 0;
+    let hp = hp_max;
 
     document.addEventListener('mousedown', function(event){
         switch (event.button) {
@@ -85,8 +120,26 @@ function initLevel () {
     const bg_mid = new Background(creatTiling(app.loader.resources["bg_mid"].texture), 10);
     //const bg_front = new Background(creatTiling(app.loader.resources["bg_front"].texture), 30);
 
+    try_again_btn.interactive = true;
+    try_again_btn.on("mousedown", resetGame);
+    function resetGame () {
+        console.log("Clicked");
+        ship.reset();
+        bg_back.reset();
+        bg_mid.reset();
+        bumper.reset();
+        console.log(app.stage.children);
+        app.stage.removeChildAt(app.stage.children.length - 1);
+        console.log(app.stage.children);
+        hp = hp_max;
+        app.ticker.start();
+    }
+    
+
+
     app.stage.addChild(ship_con);
     app.stage.addChild(fuel_disp);
+    gameover_screen.visible = false;
 
     const bumper = new Bumper(app, 30);
     //const bonus = new Bonus(app, bumper.getHeights(), 30);
@@ -102,10 +155,11 @@ function initLevel () {
         let bumper_collision = ship.checkBumperCollision(bumper_height);
         if (bumper_collision) {
             //console.log("Hit");
-            ship.reset();
-            bg_back.reset();
-            bg_mid.reset();
-            bumper.reset();
+            ship.revive();
+            bg_back.revive();
+            bg_mid.revive();
+            bumper.revive();
+            hp --;
         }
         else {
             ship.update(accel);
@@ -113,14 +167,19 @@ function initLevel () {
         let bonus_collision = ship.checkBumperCollision(bonus_height);
         if (bonus_collision) {
             console.log("Bonus");
-            ship.addFuel(50);
+            ship.addFuel(10);
+        }
+
+        if (hp === 0) {
+            app.ticker.stop();
+            app.stage.addChild(gameover_screen);
+            gameover_screen.visible = true;
         }
 
 
         //let bonus_heights = bonus.update(accel);
 
         fuel_disp.text = "Fuel left: " + ship.getFuel().toFixed(2);
-
         //bg_front.update(accel);
     });
 }

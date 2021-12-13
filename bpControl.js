@@ -157,9 +157,14 @@ export default class Bumper {
         */
     }
 
-    reset() {
+    revive() {
         this.s = this.s_base;
         this.pause = true;
+    }
+
+    reset () {
+        this.fore_ground.position.x = WIDTH;
+        this.bonus_ground.position.x = WIDTH;
     }
 
     

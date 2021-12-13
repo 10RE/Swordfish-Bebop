@@ -1,3 +1,4 @@
+import {HEIGHT, WIDTH} from "./app.js";
 
 export default class Background {
     constructor (bg, m) {
@@ -39,9 +40,13 @@ export default class Background {
         this.bg.tilePosition.x -= this.s;
     }
 
-    reset() {
+    revive () {
         this.s = this.s_base;
         this.pause = true;
+    }
+
+    reset() {
+        this.bg.tilePosition.x = WIDTH;
     }
 };
 

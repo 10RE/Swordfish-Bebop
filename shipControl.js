@@ -12,7 +12,7 @@ export default class Ship {
         this.float_a = 0.5;
         this.right_limit = 300;
         this.left_limit = 100;
-        this.x_a_max = 0.4;
+        this.x_a_max = 0.5;
         this.x_a = this.x_a_max;
         this.x_a_resist = 0.05;
         this.x_resist = 0.1;
@@ -21,7 +21,8 @@ export default class Ship {
         this.slow_down_region_x = (this.right_limit - this.left_limit) / 2 + this.left_limit;
         this.ship = ship;
         this.release_control = false;
-        this.fuel = 50;
+        this.base_fuel = 50;
+        this.fuel = this.base_fuel;
         this.max_fuel = 100;
         this.allow_fuel = true;
     }
@@ -134,11 +135,19 @@ export default class Ship {
                 this.allow_fuel = true;
             }, 1000);
         }
+        if (this.fuel > this.max_fuel) {
+            this.fuel = this.max_fuel;
+        }
     }
 
-    reset (position = HEIGHT / 2) {
+    revive (position = HEIGHT / 2) {
         this.ship.position.y = position;
         this.releaseControl();
+    }
+    
+    reset () {
+        this.revive();
+        this.fuel = this.base_fuel;
     }
 
     releaseControl() {
