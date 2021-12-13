@@ -9,7 +9,7 @@ export default class Ship {
         this.a = 6;
         this.up_limit = 10;
         this.down_limit = 10;
-        this.float_a = 5;
+        this.float_a = 0.5;
         this.right_limit = 300;
         this.left_limit = 100;
         this.x_a_max = 0.4;
@@ -21,6 +21,9 @@ export default class Ship {
         this.slow_down_region_x = (this.right_limit - this.left_limit) / 2 + this.left_limit;
         this.ship = ship;
         this.release_control = false;
+        this.fuel = 50;
+        this.max_fuel = 100;
+        this.allow_fuel = true;
     }
     
 
@@ -34,6 +37,7 @@ export default class Ship {
         }
         
         if(accel === 1){
+            this.fuel -= 0.1;
             if (this.ship.angle > -20) {
                 this.ship.angle -= 1;
             }
@@ -48,6 +52,7 @@ export default class Ship {
             this.ship.getChildAt(0).visible = false;
         }
         else if (accel === -1) {
+            this.fuel -= 0.1;
             this.v = 0;
             if (this.ship.x < this.right_limit) {
                 this.x_v -= this.x_brake_a;
@@ -59,6 +64,7 @@ export default class Ship {
             //}
         }
         else {
+            this.fuel -= 0.01;
             this.ship.getChildAt(1).visible = false;
             this.ship.getChildAt(0).visible = false;
             this.x_a = this.x_a_max;
@@ -69,11 +75,13 @@ export default class Ship {
                 this.v += this.g ;
                 
             }
+            /*
             else if (this.v < this.down_limit) {
                 this.v += this.float_a;
             }
+            */
             else {
-                this.v = this.down_limit;
+                this.v = 2 * this.down_limit * Math.atan((HEIGHT - this.ship.y - 20) / HEIGHT);
             }
             if (this.ship.x < this.slow_down_region_x && this.x_v < this.slow_down_speed_x) {
                 //console.log("slow down");
@@ -108,6 +116,24 @@ export default class Ship {
     checkBumperCollision (bumper_heights) {
         //console.log(this.ship.y + " " + bumper_heights[Math.round(this.ship.x)]);
         return this.ship.y > bumper_heights[Math.round(this.ship.x)] || this.ship.y > bumper_heights[Math.round(this.ship.x + this.ship.width)];
+    }
+
+    checkFuel () {
+        return this.fuel > 0;
+    }
+
+    getFuel () {
+        return this.fuel;
+    }
+
+    addFuel (fuel) {
+        if (this.allow_fuel) {
+            this.fuel += fuel;
+            this.allow_fuel = false;
+            setTimeout(() => {
+                this.allow_fuel = true;
+            }, 1000);
+        }
     }
 
     reset (position = HEIGHT / 2) {

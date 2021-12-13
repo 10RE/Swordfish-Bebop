@@ -1,6 +1,7 @@
 import Ship from "./shipControl.js";
 import Background from "./bgControl.js";
 import Bumper from "./bpControl.js";
+//import Bonus from "./bonusControl.js";
 
 export const HEIGHT = 720;
 export const WIDTH = 1280;
@@ -12,7 +13,7 @@ let app = new PIXI.Application({ width: WIDTH, height: HEIGHT });
 document.body.appendChild(app.view);
 
 // Create the sprite and add it to the stage
-let ship_spr = PIXI.Sprite.from('swordfish.png');
+let ship_spr = PIXI.Sprite.from('./assets/swordfish.png');
 ship_spr.anchor.set(0, 1);
 ship_spr.scale.set(0.2, 0.2);
 ship_spr.position.set(0, 0);
@@ -31,6 +32,9 @@ ship_con.addChild(ship_spr);
 ship_con.position.set(100, HEIGHT/2);
 const ship = new Ship(ship_con);
 
+let fuel_disp = new PIXI.Text('Fuel left',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "right"});
+fuel_disp.anchor.set(1, 0);
+fuel_disp.position.set(WIDTH - 10, 10);
 
 app.loader.baseUrl = "./assets";
 app.loader.add("bg_back", "background/back.png");
@@ -82,8 +86,10 @@ function initLevel () {
     //const bg_front = new Background(creatTiling(app.loader.resources["bg_front"].texture), 30);
 
     app.stage.addChild(ship_con);
+    app.stage.addChild(fuel_disp);
 
     const bumper = new Bumper(app, 30);
+    //const bonus = new Bonus(app, bumper.getHeights(), 30);
 
     let elapsed = 0.0;
     app.ticker.add((delta) => {
@@ -91,10 +97,11 @@ function initLevel () {
         
         bg_back.update(accel);
         bg_mid.update(accel);
-        let bumper_heights = bumper.update(accel);
-        let bumper_collision = ship.checkBumperCollision(bumper_heights);
+        let bumper_height, bonus_height;
+        [bumper_height, bonus_height] = bumper.update(accel);
+        let bumper_collision = ship.checkBumperCollision(bumper_height);
         if (bumper_collision) {
-            console.log("Hit");
+            //console.log("Hit");
             ship.reset();
             bg_back.reset();
             bg_mid.reset();
@@ -103,6 +110,16 @@ function initLevel () {
         else {
             ship.update(accel);
         }
+        let bonus_collision = ship.checkBumperCollision(bonus_height);
+        if (bonus_collision) {
+            console.log("Bonus");
+            ship.addFuel(50);
+        }
+
+
+        //let bonus_heights = bonus.update(accel);
+
+        fuel_disp.text = "Fuel left: " + ship.getFuel().toFixed(2);
 
         //bg_front.update(accel);
     });

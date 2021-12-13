@@ -7,7 +7,7 @@ export default class Bumper {
         this.s = this.s_base;
         this.a = this.s_base / 10;
         this.r_a = this.s_base / 20;
-        this.r = 0.6;
+        this.r = 0.4;
         this.app = app;
         /*
         this.prev_fore_ground = new PIXI.Container();
@@ -17,12 +17,19 @@ export default class Bumper {
         */
         this.fore_ground = new PIXI.Container();
         this.height_arr;
+
+        this.generate_thres = 80;
+        this.bonus_height_arr;
+        this.bonus_size = 50;   
+        this.bonus_gap = 50;
+        this.bonus_ground = new PIXI.Container();
+
         this.pause = false;
-        this.initForeGround();
+        this.init();
         
     }
 
-    initForeGround() {
+    init() {
         /*
         this.addBlockToForeGround(this.prev_fore_ground);
         this.prev_fore_ground.position.x = - WIDTH / 4 * 3;
@@ -37,26 +44,42 @@ export default class Bumper {
         this.app.stage.addChild(this.next_fore_ground);
         */
 
-        this.addBlockToForeGround(this.fore_ground, 30 * WIDTH);
+        this.addBlock(30 * WIDTH);
         this.fore_ground.position.x = WIDTH;
         this.app.stage.addChild(this.fore_ground);
+        this.bonus_ground.position.x = WIDTH;
+        this.app.stage.addChild(this.bonus_ground);
     }
 
-    addBlockToForeGround(fore_ground, total_width = 10 * WIDTH, block_min_width = 100, block_width_diff = 300, block_max_gap = 100, block_max_height = HEIGHT / 3 ) {
+    addBlock(total_width = 10 * WIDTH, block_min_width = 100, block_width_diff = 300, block_max_gap = 100, block_max_height = HEIGHT / 3 ) {
         this.height_arr = new Array(total_width).fill(HEIGHT);
+        this.bonus_height_arr = new Array(total_width).fill(HEIGHT + 1);
         let pos_s = 0;
         while (pos_s < total_width) {
             const block = new PIXI.Graphics();
-            block.beginFill(0xDE3249);
+            block.beginFill(0xFFFFFF);
             let local_height = Math.random() * block_max_height;
             let local_width = Math.random() * block_width_diff + block_min_width
             pos_s += (local_width + Math.random() * block_max_gap);
             block.drawRect(pos_s - local_width, HEIGHT - local_height, local_width, local_height);
-            block.endFill(); 
+            block.endFill();
+
             for (let pos = pos_s - local_width; pos < pos_s; pos ++) {
                 this.height_arr[Math.round(pos)] = HEIGHT - local_height;
             }
-            fore_ground.addChild(block);
+
+            this.fore_ground.addChild(block);
+
+            if ( Math.random() * 100 > this.generate_thres ) {
+                const bonus_block = new PIXI.Graphics();
+                bonus_block.beginFill(0xFF0000);
+                bonus_block.drawRect(pos_s - local_width, HEIGHT - local_height - this.bonus_size - this.bonus_gap, this.bonus_size, this.bonus_size);
+                bonus_block.endFill();
+                this.bonus_ground.addChild(bonus_block);
+                for (let pos = pos_s - local_width; pos < pos_s + this.bonus_size; pos ++) {
+                    this.bonus_height_arr[Math.round(pos)] = HEIGHT - local_height - this.bonus_size - this.bonus_gap;
+                }
+            }
         }
     }
 
@@ -105,9 +128,10 @@ export default class Bumper {
         }
 
         this.fore_ground.position.x -= this.s;
+        this.bonus_ground.position.x -= this.s;
 
         let cur_pos = - Math.round(this.fore_ground.position.x);
-        return this.height_arr.slice( cur_pos, cur_pos + WIDTH );
+        return [this.height_arr.slice( cur_pos, cur_pos + WIDTH ), this.bonus_height_arr.slice( cur_pos, cur_pos + WIDTH )];
 
         /*
         this.prev_fore_ground.position.x -= this.s;
@@ -137,5 +161,11 @@ export default class Bumper {
         this.s = this.s_base;
         this.pause = true;
     }
+
+    
+    getHeights() {
+        return this.height_arr;
+    }
+    
 };
 
