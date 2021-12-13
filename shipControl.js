@@ -1,77 +1,121 @@
 import {HEIGHT} from "./app.js";
 
-let v = 0;
-let x_v = 0;
-const g = 3;
-const a = 6;
-const up_limit = 10;
-const down_limit = 10;
-const float_a = 5;
-const right_limit = 250;
-const left_limit = 50;
-const x_a_max = 0.4;
-let x_a = x_a_max;
-const x_a_resist = 0.03;
-const x_resist = 0.1;
-const slow_down_speed_x = -1;
-const slow_down_region_x = (right_limit - left_limit) / 2 + left_limit;
-
-export default function shipUpdate(tar, give_power) {
-    //console.log(tar.y);
+export default class Ship {
     
-    if(give_power){
-        if (tar.angle > -20) {
-            tar.angle -= 1;
-        }
-        if (v > -up_limit) {
-            v -= (- g + a);
-        }
-        if (tar.x < right_limit) {
-            x_a = x_a > 0 ? x_a - x_a_resist : x_a;
-            x_v += x_a;
-        }
+    constructor (ship) {
+        this.v = 0;
+        this.x_v = 0;
+        this.g = 3;
+        this.a = 6;
+        this.up_limit = 10;
+        this.down_limit = 10;
+        this.float_a = 5;
+        this.right_limit = 300;
+        this.left_limit = 100;
+        this.x_a_max = 0.4;
+        this.x_a = this.x_a_max;
+        this.x_a_resist = 0.05;
+        this.x_resist = 0.1;
+        this.x_brake_a = 3;
+        this.slow_down_speed_x = -1;
+        this.slow_down_region_x = (this.right_limit - this.left_limit) / 2 + this.left_limit;
+        this.ship = ship;
+        this.release_control = false;
     }
-    else {
-        x_a = x_a_max;
-        if (tar.angle < -10) {
-            tar.angle += 1;
+    
+
+    update(accel) {
+        //console.log(this.ship.y);
+        if (accel) {
+            this.release_control = false;
         }
-        if (v < 0) {
-            v += g ;
-            
-        }
-        else if (v < down_limit) {
-            v += float_a;
-        }
-        else {
-            v = down_limit;
-        }
-        if (tar.x < slow_down_region_x && x_v < slow_down_speed_x) {
-            //console.log("slow down");
-            x_v += x_resist;
-        }
-        else {
-            x_v -= x_resist;
+        if (this.release_control) {
+            return;
         }
         
+        if(accel === 1){
+            if (this.ship.angle > -20) {
+                this.ship.angle -= 1;
+            }
+            if (this.v > -this.up_limit) {
+                this.v -= (- this.g + this.a);
+            }
+            if (this.ship.x < this.right_limit) {
+                this.x_a = this.x_a > 0 ? this.x_a - this.x_a_resist : this.x_a;
+                this.x_v += this.x_a;
+            }
+            this.ship.getChildAt(1).visible = true;
+            this.ship.getChildAt(0).visible = false;
+        }
+        else if (accel === -1) {
+            this.v = 0;
+            if (this.ship.x < this.right_limit) {
+                this.x_v -= this.x_brake_a;
+            }
+            this.ship.getChildAt(1).visible = false;
+            this.ship.getChildAt(0).visible = true;
+            //if (this.ship.x <= this.left_limit) {
+            //    this.ship.getChildAt(0).visible = false;
+            //}
+        }
+        else {
+            this.ship.getChildAt(1).visible = false;
+            this.ship.getChildAt(0).visible = false;
+            this.x_a = this.x_a_max;
+            if (this.ship.angle < -10) {
+                this.ship.angle += 1;
+            }
+            if (this.v < 0) {
+                this.v += this.g ;
+                
+            }
+            else if (this.v < this.down_limit) {
+                this.v += this.float_a;
+            }
+            else {
+                this.v = this.down_limit;
+            }
+            if (this.ship.x < this.slow_down_region_x && this.x_v < this.slow_down_speed_x) {
+                //console.log("slow down");
+                this.x_v += this.x_resist;
+            }
+            else {
+                this.x_v -= this.x_resist;
+            }
+            
+        }
+        
+        this.ship.y += this.v;
+        this.ship.x += this.x_v;
+        if (this.ship.y > HEIGHT){
+            this.ship.y = HEIGHT;
+            this.v = 0;
+        }
+        else if (this.ship.y < 0) {
+            this.ship.y = 0;
+            this.v = 0;
+        }
+        if (this.ship.x > this.right_limit) {
+            this.ship.x = this.right_limit;
+            this.x_v = 0;
+        }
+        else if (this.ship.x < this.left_limit) {
+            this.ship.x = this.left_limit;
+            this.x_v = 0;
+        }
     }
-    
-    tar.y += v;
-    tar.x += x_v;
-    if (tar.y > HEIGHT){
-        tar.y = HEIGHT;
-        v = 0;
+
+    checkBumperCollision (bumper_heights) {
+        //console.log(this.ship.y + " " + bumper_heights[Math.round(this.ship.x)]);
+        return this.ship.y > bumper_heights[Math.round(this.ship.x)] || this.ship.y > bumper_heights[Math.round(this.ship.x + this.ship.width)];
     }
-    else if (tar.y < 0) {
-        tar.y = 0;
-        v = 0;
+
+    reset (position = HEIGHT / 2) {
+        this.ship.position.y = position;
+        this.releaseControl();
     }
-    if (tar.x > right_limit) {
-        tar.x = right_limit;
-        x_v = 0;
+
+    releaseControl() {
+        this.release_control = true;
     }
-    else if (tar.x < left_limit) {
-        tar.x = left_limit;
-        x_v = 0;
-    }
-}
+} 

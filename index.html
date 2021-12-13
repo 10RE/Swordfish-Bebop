@@ -8,6 +8,11 @@
     <body>
         <h1>Hello PixiJS</h1>
         <script type="text/javascript" src="https://pixijs.download/release/pixi.js"></script>
+        <script>
+            window.oncontextmenu = function(e){
+                e.preventDefault();
+            }
+        </script>
         <script src="./app.js" type="module"></script>
     </body>
 </html>

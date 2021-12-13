@@ -1,5 +1,6 @@
-import shipUpdate from "./shipControl.js";
+import Ship from "./shipControl.js";
 import Background from "./bgControl.js";
+import Bumper from "./bpControl.js";
 
 export const HEIGHT = 720;
 export const WIDTH = 1280;
@@ -11,16 +12,32 @@ let app = new PIXI.Application({ width: WIDTH, height: HEIGHT });
 document.body.appendChild(app.view);
 
 // Create the sprite and add it to the stage
-let ship = PIXI.Sprite.from('swordfish.png');
-ship.anchor.set(0, 1);
-ship.scale.set(0.2, 0.2);
-ship.position.set(50, HEIGHT/2);
+let ship_spr = PIXI.Sprite.from('swordfish.png');
+ship_spr.anchor.set(0, 1);
+ship_spr.scale.set(0.2, 0.2);
+ship_spr.position.set(0, 0);
+let ship_flame = PIXI.Sprite.from('./assets/flame.png');
+ship_flame.anchor.set(1, 1);
+ship_flame.scale.set(0.2, 0.2);
+ship_flame.position.set(0, -10);
+let ship_flame_r = PIXI.Sprite.from('./assets/flame_reverse.png');
+ship_flame_r.anchor.set(1, 1);
+ship_flame_r.scale.set(0.2, 0.2);
+ship_flame_r.position.set(40, -5);
+let ship_con = new PIXI.Container();
+ship_con.addChild(ship_flame_r);
+ship_con.addChild(ship_flame);
+ship_con.addChild(ship_spr);
+ship_con.position.set(100, HEIGHT/2);
+const ship = new Ship(ship_con);
+
 
 app.loader.baseUrl = "./assets";
 app.loader.add("bg_back", "background/back.png");
 app.loader.add("bg_mid", "background/middle.png");
 app.loader.add("bg_front", "background/front.png");
 app.loader.add("bg", "background/star_field.png");
+//app.loader.add("flame", "flame.png");
 app.loader.onComplete.add(initLevel);
 app.loader.load();
 
@@ -33,25 +50,26 @@ function creatTiling (texture) {
     return tiling;
 }
 
-function checkIntersect(a, b)
-{
-    var ab = a.getBounds();
-    var bb = b.getBounds();
-    return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width && ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
-}
-
 function initLevel () {
 
-    let give_power = false;
+    let accel = 0;
 
     document.addEventListener('mousedown', function(event){
+        switch (event.button) {
+            case 0:
+                accel = 1;
+                break;
+            case 2:
+                accel = -1;
+                break;
+        }
         //console.log("down");
-        give_power = true;
+        
     });
 
     document.addEventListener('mouseup', function(event){
         setTimeout(() => {
-            give_power = false;
+            accel = 0;
         }, 0);
     });
 
@@ -63,25 +81,29 @@ function initLevel () {
     const bg_mid = new Background(creatTiling(app.loader.resources["bg_mid"].texture), 10);
     //const bg_front = new Background(creatTiling(app.loader.resources["bg_front"].texture), 30);
 
-    app.stage.addChild(ship);
+    app.stage.addChild(ship_con);
 
-    const fore_ground = new PIXI.Container();
-    
-    const block = new PIXI.Graphics();
-    block.beginFill(0xDE3249);
-    for (let i = 0; i < 10; i++) {
-        let pos_s = i * 50;
-        block.drawRect(pos_s, 0, pos_s + 50, Math.random() * 100);
-    }
-    block.endFill(); 
-    app.stage.addChild(block);
+    const bumper = new Bumper(app, 30);
 
     let elapsed = 0.0;
     app.ticker.add((delta) => {
         elapsed += delta;
-        shipUpdate(ship, give_power);
-        bg_back.update(give_power);
-        bg_mid.update(give_power);
-        //bg_front.update(give_power);
+        
+        bg_back.update(accel);
+        bg_mid.update(accel);
+        let bumper_heights = bumper.update(accel);
+        let bumper_collision = ship.checkBumperCollision(bumper_heights);
+        if (bumper_collision) {
+            console.log("Hit");
+            ship.reset();
+            bg_back.reset();
+            bg_mid.reset();
+            bumper.reset();
+        }
+        else {
+            ship.update(accel);
+        }
+
+        //bg_front.update(accel);
     });
 }
