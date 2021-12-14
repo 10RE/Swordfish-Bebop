@@ -30,6 +30,8 @@ export default class Bumper {
         this.max_stage_width = 3 * WIDTH;
         this.min_stage_width = 12 * WIDTH;
         this.stage_width = WIDTH;
+        this.app.stage.addChild(this.fore_ground);
+        this.app.stage.addChild(this.bonus_ground);
         this.generateStage();
         
     }
@@ -64,9 +66,9 @@ export default class Bumper {
         this.lower = !this.lower;
         
         this.fore_ground.position.x = WIDTH;
-        this.app.stage.addChild(this.fore_ground);
+        
         this.bonus_ground.position.x = WIDTH;
-        this.app.stage.addChild(this.bonus_ground);
+        
     }
 
     chooseRandom(arr) {
