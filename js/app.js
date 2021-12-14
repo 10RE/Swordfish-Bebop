@@ -10,7 +10,7 @@ export const WIDTH = 1280;
 
 let app = new PIXI.Application({ width: WIDTH, height: HEIGHT });
 
-document.body.appendChild(app.view);
+document.getElementById("app_container").appendChild(app.view);
 
 // Create the sprite and add it to the stage
 let ship_spr = PIXI.Sprite.from('./assets/swordfish.png');

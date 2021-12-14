@@ -3,16 +3,33 @@
     <head>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
+        <link rel="stylesheet" href="./css/style.css">
+        <title> Swordfish </title>
         <!--<script src="https://pixijs.download/release/pixi.js"></script>-->
     </head>
     <body>
+        
         <script type="text/javascript" src="https://pixijs.download/release/pixi.js"></script>
         <script>
             window.oncontextmenu = function(e){
                 e.preventDefault();
             }
         </script>
-        
-        <script src="./app.js" type="module"></script>
+        <script src="./js/app.js" type="module"></script>
+        <div id = "app_container"> </div>
+        <h1> SWORDFISH </h1>
+        <h2> Instructions </h2>
+        <ol>
+            <li> Left click to accelerate </li>
+            <li> Right click to brake </li>
+            <li> Esc to pause </li>
+            <li> Fly </li>
+        </ol>
+
+        <h2> Tips </h2>
+        <ol>
+            <li> Collect oil tanks can get you futher </li>
+            <li> They might repair the ship as well </li>
+        </ol>
     </body>
 </html>

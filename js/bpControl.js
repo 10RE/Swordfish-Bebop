@@ -18,8 +18,9 @@ export default class Bumper {
         this.fore_ground = new PIXI.Container();
         this.height_arr;
 
-        this.generate_thres = 80;
-        this.generate_upper_thres = 70;
+        this.generate_thres = 70;
+        this.generate_thres_diff = 10;
+        this.min_generate_thres = 90;
         this.bonus_height_arr;
         this.bonus_size = 50;   
         this.bonus_gap = 50;
@@ -52,6 +53,16 @@ export default class Bumper {
         this.next_fore_ground.position.x = WIDTH / 4 * 5;
         this.app.stage.addChild(this.next_fore_ground);
         */
+
+        if (this.generate_thres < this.min_generate_thres) {
+            this.generate_thres += this.dist / 20000;
+        }
+        else {
+            this.generate_thres = this.min_generate_thres;
+        }
+        
+        console.log(this.generate_thres);
+        console.log(this.generate_thres_diff);
 
         this.removeChildren(this.fore_ground);
         this.removeChildren(this.bonus_ground);
@@ -169,7 +180,7 @@ export default class Bumper {
                 this.height_arr[Math.round(pos)] = local_height;
             }
 
-            if ( Math.random() * 100 > this.generate_upper_thres ) {
+            if ( Math.random() * 100 > this.generate_thres - this.generate_thres_diff ) {
                 const bonus_block = new PIXI.Graphics();
                 bonus_block.beginFill(0xFF0000);
                 bonus_block.drawRect(pos_s - local_width, local_height + 2 * this.bonus_gap, this.bonus_size, this.bonus_size);
@@ -233,6 +244,7 @@ export default class Bumper {
             this.generateStage();
         }
 
+        
         let cur_pos = - Math.round(this.fore_ground.position.x);
         return [this.height_arr.slice( cur_pos, cur_pos + WIDTH ), this.bonus_height_arr.slice( cur_pos, cur_pos + WIDTH ), this.lower];
 
