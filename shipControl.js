@@ -29,7 +29,6 @@ export default class Ship {
         this.power_fuel_con = 0.2;
         this.float_fuel_con = 0.02;
     }
-    
 
     update(accel) {
         //console.log(this.ship.y);
@@ -117,9 +116,15 @@ export default class Ship {
         }
     }
 
-    checkBumperCollision (bumper_heights) {
+    checkBumperCollision (bumper_heights, lower, upper) {
         //console.log(this.ship.y + " " + bumper_heights[Math.round(this.ship.x)]);
-        return this.ship.y > bumper_heights[Math.round(this.ship.x)] || this.ship.y > bumper_heights[Math.round(this.ship.x + this.ship.width)];
+        if (lower) {
+            return this.ship.y > bumper_heights[Math.round(this.ship.x)] || this.ship.y > bumper_heights[Math.round(this.ship.x + this.ship.width)];
+        }
+        else  {
+            return this.ship.y < bumper_heights[Math.round(this.ship.x)] || this.ship.y < bumper_heights[Math.round(this.ship.x + this.ship.width)];
+        }
+        
     }
 
     checkFuel () {

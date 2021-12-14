@@ -96,8 +96,14 @@ function initLevel () {
 
     let accel = 0;
     let hp = hp_max;
+    let cheats_on = false;
+    let pause = true;
 
     document.addEventListener('mousedown', function(event){
+        if (pause) {
+            app.ticker.start();
+            pause = !pause;
+        }
         switch (event.button) {
             case 0:
                 accel = 1;
@@ -116,6 +122,25 @@ function initLevel () {
         }, 0);
     });
 
+    document.addEventListener("keydown", event => {
+        if (event.isComposing || event.keyCode === 65) {
+            console.log("Cheats on");
+            cheats_on = !cheats_on;
+            return;
+        }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.isComposing || event.keyCode === 27) {
+            if (pause) {
+                app.ticker.start();
+            }
+            console.log("Pause");
+            pause = !pause;
+            return;
+        }
+    });
+
     //let bg = creatTiling(app.loader.resources["bg"].texture);
     //let bg_back = creatTiling(app.loader.resources["bg_back"].texture);
     //let bg_mid = creatTiling(app.loader.resources["bg_mid"].texture);
@@ -132,21 +157,19 @@ function initLevel () {
         bg_back.reset();
         bg_mid.reset();
         bumper.reset();
-        console.log(app.stage.children);
         app.stage.removeChildAt(app.stage.children.length - 1);
-        console.log(app.stage.children);
         hp = hp_max;
         app.ticker.start();
     }
     
 
 
+    const bumper = new Bumper(app, 30);
     app.stage.addChild(ship_con);
     app.stage.addChild(fuel_disp);
     app.stage.addChild(hp_disp);
     gameover_screen.visible = false;
 
-    const bumper = new Bumper(app, 30);
     //const bonus = new Bonus(app, bumper.getHeights(), 30);
 
     let elapsed = 0.0;
@@ -155,11 +178,13 @@ function initLevel () {
         
         bg_back.update(accel);
         bg_mid.update(accel);
-        let bumper_height, bonus_height;
-        [bumper_height, bonus_height] = bumper.update(accel);
-        let bumper_collision = ship.checkBumperCollision(bumper_height);
+        let bumper_height, bonus_height, lower;
+        [bumper_height, bonus_height, lower] = bumper.update(accel);
+        //console.log(bumper_height);
+        //console.log(bonus_height);
+        let bumper_collision = ship.checkBumperCollision(bumper_height, lower);
         if (bumper_collision) {
-            //console.log("Hit");
+            console.log("Hit");
             ship.revive();
             bg_back.revive();
             bg_mid.revive();
@@ -169,7 +194,7 @@ function initLevel () {
         else {
             ship.update(accel);
         }
-        let bonus_collision = ship.checkBumperCollision(bonus_height);
+        let bonus_collision = ship.checkBumperCollision(bonus_height, lower);
         if (bonus_collision) {
             console.log("Bonus");
             ship.addFuel(10);
@@ -179,10 +204,14 @@ function initLevel () {
             hp = 0;
         }
 
-        if (hp === 0) {
+        if (hp === 0 && !cheats_on) {
             app.ticker.stop();
             app.stage.addChild(gameover_screen);
             gameover_screen.visible = true;
+        }
+
+        if (pause) {
+            app.ticker.stop();
         }
 
 
