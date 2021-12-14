@@ -25,10 +25,16 @@ let ship_flame_r = PIXI.Sprite.from('./assets/flame_reverse.png');
 ship_flame_r.anchor.set(1, 1);
 ship_flame_r.scale.set(0.2, 0.2);
 ship_flame_r.position.set(40, -5);
+let bonus_effect = PIXI.Sprite.from('./assets/bonus_effect.png');
+bonus_effect.anchor.set(1, 1);
+bonus_effect.scale.set(0.2, 0.2);
+bonus_effect.position.set(100, 40);
 let ship_con = new PIXI.Container();
 ship_con.addChild(ship_flame_r);
 ship_con.addChild(ship_flame);
 ship_con.addChild(ship_spr);
+ship_con.addChild(bonus_effect);
+bonus_effect.visible = false;
 ship_con.position.set(100, HEIGHT/2);
 const ship = new Ship(ship_con);
 
@@ -71,6 +77,27 @@ gameover_screen.addChild(gameover_background);
 gameover_screen.addChild(gameover_disp);
 gameover_screen.addChild(try_again_btn);
 
+let pause_disp = new PIXI.Text('PAUSE', {fontFamily : 'Arial', fontSize: 40, fill: 0xFFFFFF, align: "center", fontWeight: "bold"});
+pause_disp.anchor.set(0.5, 0.5);
+pause_disp.position.set(WIDTH / 2, HEIGHT / 2);
+
+let pause_inst = new PIXI.Text('Click to continue.', {fontFamily : 'Arial', fontSize: 20, fill: 0xFFFFFF, align: "center", fontWeight: "bold"});
+pause_inst.anchor.set(0.5, 0.5);
+pause_inst.position.set(WIDTH / 2, HEIGHT / 2 + 50);
+
+let pause_background = new PIXI.Graphics();
+pause_background.beginFill(0);
+pause_background.drawRect(0, 0, WIDTH, HEIGHT);
+pause_background.endFill();
+pause_background.pivot.set(0, 0);
+pause_background.position.set(0, 0);
+pause_background.alpha = 0.7;
+
+let pause_screen = new PIXI.Container();
+pause_screen.addChild(pause_background);
+pause_screen.addChild(pause_disp);
+pause_screen.addChild(pause_inst);
+
 
 app.loader.baseUrl = "./assets";
 app.loader.add("bg_back", "background/back.png");
@@ -90,6 +117,22 @@ function creatTiling (texture) {
     return tiling;
 }
 
+function bonusEffect () {
+    let total_time = 100;
+    let total_count = 1;
+    bonus_effect.visible = true;
+    let prev_time_out = 0;
+    for (let count = 0; count < total_count - 1; count ++) {
+        prev_time_out += total_time / total_count;
+        setTimeout(() => {
+            bonus_effect.visible = !bonusEffect.visible;
+        }, prev_time_out);
+    }
+    setTimeout(() => {
+        bonus_effect.visible = false;
+    }, total_time);
+}
+
 const hp_max = 3;
 
 function initLevel () {
@@ -101,6 +144,7 @@ function initLevel () {
 
     document.addEventListener('mousedown', function(event){
         if (pause) {
+            app.stage.removeChildAt(app.stage.children.length - 1);
             app.ticker.start();
             pause = !pause;
         }
@@ -113,10 +157,40 @@ function initLevel () {
                 break;
         }
         //console.log("down");
-        
     });
 
     document.addEventListener('mouseup', function(event){
+        setTimeout(() => {
+            accel = 0;
+        }, 0);
+    });
+
+    document.addEventListener('touchstart', function(event){
+        if (pause) {
+            app.stage.removeChildAt(app.stage.children.length - 1);
+            app.ticker.start();
+            pause = !pause;
+        }
+        switch (event.touches.length) {
+            case 1:
+                accel = 1;
+                break;
+            case 2:
+                accel = -1;
+                break;
+            case 3:
+                if (pause) {
+                    app.stage.removeChildAt(app.stage.children.length - 1);
+                    app.ticker.start();
+                }
+                console.log("Pause");
+                pause = !pause;
+                break;
+        }
+        //console.log("down");
+    });
+
+    document.addEventListener('touchend', function(event){
         setTimeout(() => {
             accel = 0;
         }, 0);
@@ -133,6 +207,7 @@ function initLevel () {
     document.addEventListener("keydown", event => {
         if (event.isComposing || event.keyCode === 27) {
             if (pause) {
+                app.stage.removeChildAt(app.stage.children.length - 1);
                 app.ticker.start();
             }
             console.log("Pause");
@@ -151,6 +226,7 @@ function initLevel () {
 
     try_again_btn.interactive = true;
     try_again_btn.on("mousedown", resetGame);
+    try_again_btn.on("touchdown", resetGame);
     function resetGame () {
         console.log("Clicked");
         ship.reset();
@@ -161,14 +237,13 @@ function initLevel () {
         hp = hp_max;
         app.ticker.start();
     }
-    
-
 
     const bumper = new Bumper(app, 30);
     app.stage.addChild(ship_con);
     app.stage.addChild(fuel_disp);
     app.stage.addChild(hp_disp);
     gameover_screen.visible = false;
+    pause_screen.visible = false;
 
     //const bonus = new Bonus(app, bumper.getHeights(), 30);
 
@@ -182,7 +257,7 @@ function initLevel () {
         [bumper_height, bonus_height, lower] = bumper.update(accel);
         //console.log(bumper_height);
         //console.log(bonus_height);
-        let bumper_collision = ship.checkBumperCollision(bumper_height, lower);
+        let bumper_collision = ship.checkCollision(bumper_height, lower);
         if (bumper_collision) {
             console.log("Hit");
             ship.revive();
@@ -194,9 +269,10 @@ function initLevel () {
         else {
             ship.update(accel);
         }
-        let bonus_collision = ship.checkBumperCollision(bonus_height, lower);
+        let bonus_collision = ship.checkCollision(bonus_height, lower);
         if (bonus_collision) {
             console.log("Bonus");
+            bonusEffect();
             ship.addFuel(10);
         }
 
@@ -212,6 +288,8 @@ function initLevel () {
 
         if (pause) {
             app.ticker.stop();
+            app.stage.addChild(pause_screen);
+            pause_screen.visible = true;
         }
 
 

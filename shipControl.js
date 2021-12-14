@@ -116,13 +116,13 @@ export default class Ship {
         }
     }
 
-    checkBumperCollision (bumper_heights, lower, upper) {
+    checkCollision (bumper_heights, lower) {
         //console.log(this.ship.y + " " + bumper_heights[Math.round(this.ship.x)]);
         if (lower) {
             return this.ship.y > bumper_heights[Math.round(this.ship.x)] || this.ship.y > bumper_heights[Math.round(this.ship.x + this.ship.width)];
         }
         else  {
-            return this.ship.y < bumper_heights[Math.round(this.ship.x)] || this.ship.y < bumper_heights[Math.round(this.ship.x + this.ship.width)];
+            return this.ship.y - this.ship.height < bumper_heights[Math.round(this.ship.x)] || this.ship.y - this.ship.height < bumper_heights[Math.round(this.ship.x + this.ship.width / 2)];
         }
         
     }
@@ -135,13 +135,13 @@ export default class Ship {
         return this.fuel;
     }
 
-    addFuel (fuel) {
+    addFuel (fuel, speed, block_width) {
         if (this.allow_fuel) {
             this.fuel += fuel;
             this.allow_fuel = false;
             setTimeout(() => {
                 this.allow_fuel = true;
-            }, 1000);
+            }, 500);
         }
         if (this.fuel > this.max_fuel) {
             this.fuel = this.max_fuel;

@@ -267,7 +267,6 @@ export default class Bumper {
         this.bonus_ground.position.x = WIDTH;
     }
 
-    
     getHeights() {
         return this.height_arr;
     }
