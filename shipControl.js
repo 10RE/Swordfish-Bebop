@@ -6,7 +6,8 @@ export default class Ship {
         this.v = 0;
         this.x_v = 0;
         this.g = 3;
-        this.a = 6;
+        this.a_base = 6;
+        this.a = this.a_base;
         this.up_limit = 10;
         this.down_limit = 10;
         this.float_a = 0.5;
@@ -25,6 +26,8 @@ export default class Ship {
         this.fuel = this.base_fuel;
         this.max_fuel = 100;
         this.allow_fuel = true;
+        this.power_fuel_con = 0.2;
+        this.float_fuel_con = 0.02;
     }
     
 
@@ -38,7 +41,7 @@ export default class Ship {
         }
         
         if(accel === 1){
-            this.fuel -= 0.1;
+            this.fuel -= this.power_fuel_con;
             if (this.ship.angle > -20) {
                 this.ship.angle -= 1;
             }
@@ -53,7 +56,7 @@ export default class Ship {
             this.ship.getChildAt(0).visible = false;
         }
         else if (accel === -1) {
-            this.fuel -= 0.1;
+            this.fuel -= this.power_fuel_con;
             this.v = 0;
             if (this.ship.x < this.right_limit) {
                 this.x_v -= this.x_brake_a;
@@ -65,7 +68,7 @@ export default class Ship {
             //}
         }
         else {
-            this.fuel -= 0.01;
+            this.fuel -= this.float_fuel_con;
             this.ship.getChildAt(1).visible = false;
             this.ship.getChildAt(0).visible = false;
             this.x_a = this.x_a_max;
@@ -142,6 +145,10 @@ export default class Ship {
 
     revive (position = HEIGHT / 2) {
         this.ship.position.y = position;
+        this.v = 0;
+        this.x_v = 0;
+        this.a = this.a_base;
+        this.x_a = this.x_a_max;
         this.releaseControl();
     }
     

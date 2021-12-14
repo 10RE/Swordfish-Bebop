@@ -32,9 +32,13 @@ ship_con.addChild(ship_spr);
 ship_con.position.set(100, HEIGHT/2);
 const ship = new Ship(ship_con);
 
-let fuel_disp = new PIXI.Text('Fuel left',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "right"});
+let fuel_disp = new PIXI.Text('Fuel left: ',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "right"});
 fuel_disp.anchor.set(1, 0);
 fuel_disp.position.set(WIDTH - 10, 10);
+
+let hp_disp = new PIXI.Text('Hp: ',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "left"});
+hp_disp.anchor.set(0, 0);
+hp_disp.position.set(10, 10);
 
 let gameover_disp = new PIXI.Text('See you Space Cowboy', {fontFamily : 'Arial', fontSize: 40, fill: 0xFFFFFF, align: "center", fontWeight: "bold", fontStyle: "italic"});
 gameover_disp.anchor.set(0.5, 0.5);
@@ -139,6 +143,7 @@ function initLevel () {
 
     app.stage.addChild(ship_con);
     app.stage.addChild(fuel_disp);
+    app.stage.addChild(hp_disp);
     gameover_screen.visible = false;
 
     const bumper = new Bumper(app, 30);
@@ -170,6 +175,10 @@ function initLevel () {
             ship.addFuel(10);
         }
 
+        if (ship.getFuel() < 0) {
+            hp = 0;
+        }
+
         if (hp === 0) {
             app.ticker.stop();
             app.stage.addChild(gameover_screen);
@@ -180,6 +189,7 @@ function initLevel () {
         //let bonus_heights = bonus.update(accel);
 
         fuel_disp.text = "Fuel left: " + ship.getFuel().toFixed(2);
+        hp_disp.text = "Hp: " + hp;
         //bg_front.update(accel);
     });
 }

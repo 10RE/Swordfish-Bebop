@@ -25,11 +25,13 @@ export default class Bumper {
         this.bonus_ground = new PIXI.Container();
 
         this.pause = false;
+        this.stage = 1;
         this.init();
         
     }
 
     init() {
+
         /*
         this.addBlockToForeGround(this.prev_fore_ground);
         this.prev_fore_ground.position.x = - WIDTH / 4 * 3;
@@ -51,24 +53,49 @@ export default class Bumper {
         this.app.stage.addChild(this.bonus_ground);
     }
 
+    chooseRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
     addBlock(total_width = 10 * WIDTH, block_min_width = 100, block_width_diff = 300, block_max_gap = 100, block_max_height = HEIGHT / 3 ) {
         this.height_arr = new Array(total_width).fill(HEIGHT);
         this.bonus_height_arr = new Array(total_width).fill(HEIGHT + 1);
         let pos_s = 0;
+        let window_colors = [0xd7d5d2, 0xb2afaa, 0x2a5b88, 0x2161b2];
+        let building_colors = [0x2d5f75, 0x287460, 0x4c5470, 0x2b5f51];
         while (pos_s < total_width) {
             const block = new PIXI.Graphics();
-            block.beginFill(0xFFFFFF);
+            block.beginFill(this.chooseRandom(building_colors));
             let local_height = Math.random() * block_max_height;
-            let local_width = Math.random() * block_width_diff + block_min_width
+            let local_width = Math.random() * block_width_diff + block_min_width;
             pos_s += (local_width + Math.random() * block_max_gap);
             block.drawRect(pos_s - local_width, HEIGHT - local_height, local_width, local_height);
             block.endFill();
 
+            this.fore_ground.addChild(block);
+
+            let x_number = Math.round(Math.random() * local_width / 20 + 5);
+            let y_number = Math.round(Math.round(local_height / 30));
+            let local_prob = Math.random() * 0.6 + 0.2;
+            
+            for (let x = 0; x < x_number; x ++) {
+                for (let y = 0; y < y_number; y ++) {
+                    if (Math.random() < local_prob) {
+                        continue;
+                    }
+                    const block_w = new PIXI.Graphics();
+                    block_w.beginFill(this.chooseRandom(window_colors));
+                    let local_height_w = 30;
+                    let local_width_w = (local_width - 20 - ((x_number - 1) * 5)) / x_number;
+                    block_w.drawRect(pos_s - local_width + 10 + x * (5 + local_width_w) , HEIGHT - local_height + 10 + y * 35, local_width_w, local_height_w);
+                    block_w.endFill();
+                    this.fore_ground.addChild(block_w);
+                }
+            }
+
             for (let pos = pos_s - local_width; pos < pos_s; pos ++) {
                 this.height_arr[Math.round(pos)] = HEIGHT - local_height;
             }
-
-            this.fore_ground.addChild(block);
 
             if ( Math.random() * 100 > this.generate_thres ) {
                 const bonus_block = new PIXI.Graphics();
