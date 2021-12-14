@@ -32,6 +32,7 @@ export default class Bumper {
         this.stage_width = WIDTH;
         this.app.stage.addChild(this.fore_ground);
         this.app.stage.addChild(this.bonus_ground);
+        this.dist = 0;
         this.generateStage();
         
     }
@@ -222,6 +223,8 @@ export default class Bumper {
             this.s = this.s_base;
         }
 
+        this.dist += this.s;
+
         this.fore_ground.position.x -= this.s;
         this.bonus_ground.position.x -= this.s;
 
@@ -265,10 +268,15 @@ export default class Bumper {
     reset () {
         this.fore_ground.position.x = WIDTH;
         this.bonus_ground.position.x = WIDTH;
+        this.dist = 0;
     }
 
     getHeights() {
         return this.height_arr;
+    }
+
+    getDist() {
+        return this.dist;
     }
     
 };

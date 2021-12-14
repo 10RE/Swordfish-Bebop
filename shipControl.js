@@ -28,6 +28,8 @@ export default class Ship {
         this.allow_fuel = true;
         this.power_fuel_con = 0.2;
         this.float_fuel_con = 0.02;
+        this.hp_max = 3;
+        this.hp = this.hp_max;
     }
 
     update(accel) {
@@ -139,6 +141,9 @@ export default class Ship {
         if (this.allow_fuel) {
             this.fuel += fuel;
             this.allow_fuel = false;
+            if (Math.random() < 0.1) {
+                this.hp += 1;
+            }
             setTimeout(() => {
                 this.allow_fuel = true;
             }, 500);
@@ -164,5 +169,17 @@ export default class Ship {
 
     releaseControl() {
         this.release_control = true;
+    }
+
+    setHp (num) {
+        this.hp = num;
+    }
+
+    getHp() {
+        return this.hp;
+    }
+
+    resetHp () {
+        this.hp = this.hp_max;
     }
 } 

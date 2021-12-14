@@ -42,6 +42,10 @@ let fuel_disp = new PIXI.Text('Fuel left: ',{fontFamily : 'Arial', fontSize: 24,
 fuel_disp.anchor.set(1, 0);
 fuel_disp.position.set(WIDTH - 10, 10);
 
+let dist_disp = new PIXI.Text('Distance: ',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "right"});
+dist_disp.anchor.set(1, 0);
+dist_disp.position.set(WIDTH - 10, 40);
+
 let hp_disp = new PIXI.Text('Hp: ',{fontFamily : 'Arial', fontSize: 24, fill: 0xFFFFFF, align: "left"});
 hp_disp.anchor.set(0, 0);
 hp_disp.position.set(10, 10);
@@ -133,12 +137,9 @@ function bonusEffect () {
     }, total_time);
 }
 
-const hp_max = 3;
-
 function initLevel () {
 
     let accel = 0;
-    let hp = hp_max;
     let cheats_on = false;
     let pause = true;
 
@@ -234,7 +235,7 @@ function initLevel () {
         bg_mid.reset();
         bumper.reset();
         app.stage.removeChildAt(app.stage.children.length - 1);
-        hp = hp_max;
+        ship.resetHp();
         app.ticker.start();
     }
 
@@ -242,6 +243,7 @@ function initLevel () {
     app.stage.addChild(ship_con);
     app.stage.addChild(fuel_disp);
     app.stage.addChild(hp_disp);
+    app.stage.addChild(dist_disp);
     gameover_screen.visible = false;
     pause_screen.visible = false;
 
@@ -264,7 +266,7 @@ function initLevel () {
             bg_back.revive();
             bg_mid.revive();
             bumper.revive();
-            hp --;
+            ship.setHp(ship.getHp() - 1);
         }
         else {
             ship.update(accel);
@@ -273,14 +275,14 @@ function initLevel () {
         if (bonus_collision) {
             console.log("Bonus");
             bonusEffect();
-            ship.addFuel(10);
+            ship.addFuel(15);
         }
 
         if (ship.getFuel() < 0) {
-            hp = 0;
+            ship.setHp(0);
         }
 
-        if (hp === 0 && !cheats_on) {
+        if (ship.getHp() === 0 && !cheats_on) {
             app.ticker.stop();
             app.stage.addChild(gameover_screen);
             gameover_screen.visible = true;
@@ -296,7 +298,8 @@ function initLevel () {
         //let bonus_heights = bonus.update(accel);
 
         fuel_disp.text = "Fuel left: " + ship.getFuel().toFixed(2);
-        hp_disp.text = "Hp: " + hp;
+        hp_disp.text = "Hp: " + ship.getHp();
+        dist_disp.text = "Distance: " + Math.floor(bumper.getDist() / 100);
         //bg_front.update(accel);
     });
 }
