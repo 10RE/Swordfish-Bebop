@@ -226,7 +226,7 @@ function initLevel () {
 
     try_again_btn.interactive = true;
     try_again_btn.on("mousedown", resetGame);
-    try_again_btn.on("touchdown", resetGame);
+    try_again_btn.on("touchstart", resetGame);
     function resetGame () {
         console.log("Clicked");
         ship.reset();
